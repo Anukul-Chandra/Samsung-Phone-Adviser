@@ -1,0 +1,18 @@
+{
+    "sourceFile": "main.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1770234768969,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1770234768969,
+            "name": "Commit-0",
+            "content": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom fastapi.responses import FileResponse\nfrom db_utils import fetch_phone_from_db, insert_phone_into_db\nfrom scraper_utils import scrape_phone\nimport os\n\napp = FastAPI()\n\n# CORS allow রাখা ভালো, যদিও একই ডোমেইনে থাকলে সমস্যা হয় না\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n# ফোন ডাটা বের করার হেল্পার ফাংশন\ndef get_phone_data(model_name):\n    clean_name = model_name.strip()\n    print(f\"🔍 Processing: {clean_name}\")\n    \n    # ১. ডাটাবেস চেক\n    db_data = fetch_phone_from_db(clean_name)\n    if db_data:\n        print(f\"✅ Found in DB: {clean_name}\")\n        row = db_data[0]\n        return {\n            \"model\": row[0], \"release_year\": row[1], \"release_date\": row[2],\n            \"display\": row[3], \"battery\": row[4], \"camera\": row[5],\n            \"ram\": row[6], \"storage\": row[7], \"price\": row[8]\n        }\n    \n    # ২. স্ক্র্যাপ করা (যদি ডাটাবেসে না থাকে)\n    print(f\"🌍 Scraping web for: {clean_name}\")\n    scraped_data = scrape_phone(clean_name)\n    \n    if scraped_data:\n        insert_phone_into_db(scraped_data)\n        return scraped_data\n    \n    return None\n\n# API Endpoint (প্রশ্ন করার জন্য)\n@app.post(\"/ask\")\ndef ask(question: str):\n    question = question.lower()\n    \n    # Comparison Mode (যদি \"vs\" থাকে)\n    if \"vs\" in question:\n        parts = question.split(\"vs\")\n        phone1_name = parts[0].strip()\n        phone2_name = parts[1].strip()\n        \n        data1 = get_phone_data(phone1_name)\n        data2 = get_phone_data(phone2_name)\n        \n        return {\n            \"mode\": \"comparison\",\n            \"phone1\": data1 or {\"model\": \"Not Found\"},\n            \"phone2\": data2 or {\"model\": \"Not Found\"}\n        }\n\n    # Single Mode (সাধারণ সার্চ)\n    else:\n        data = get_phone_data(question)\n        if data:\n            return {\"mode\": \"single\", \"data\": data}\n        else:\n            return {\"mode\": \"not_found\"}\n\n# Root Endpoint (এখানে HTML ফাইল সার্ভ করা হচ্ছে)\n@app.get(\"/\")\ndef home():\n    return FileResponse(\"index.html\")"
+        }
+    ]
+}

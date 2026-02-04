@@ -1,13 +1,11 @@
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from db_utils import fetch_phone_from_db, insert_phone_into_db
 from scraper_utils import scrape_phone
-import os
 
 app = FastAPI()
 
-# CORS allow রাখা ভালো, যদিও একই ডোমেইনে থাকলে সমস্যা হয় না
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,12 +14,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ফোন ডাটা বের করার হেল্পার ফাংশন
+# this function checks the database if the phone exist then show if not then it scrapping from the website 
 def get_phone_data(model_name):
     clean_name = model_name.strip()
     print(f"🔍 Processing: {clean_name}")
     
-    # ১. ডাটাবেস চেক
+    #  database check 
     db_data = fetch_phone_from_db(clean_name)
     if db_data:
         print(f"✅ Found in DB: {clean_name}")
@@ -32,7 +30,7 @@ def get_phone_data(model_name):
             "ram": row[6], "storage": row[7], "price": row[8]
         }
     
-    # ২. স্ক্র্যাপ করা (যদি ডাটাবেসে না থাকে)
+    # scarpping
     print(f"🌍 Scraping web for: {clean_name}")
     scraped_data = scrape_phone(clean_name)
     
@@ -42,12 +40,11 @@ def get_phone_data(model_name):
     
     return None
 
-# API Endpoint (প্রশ্ন করার জন্য)
 @app.post("/ask")
 def ask(question: str):
     question = question.lower()
     
-    # Comparison Mode (যদি "vs" থাকে)
+    # Comparison Mode
     if "vs" in question:
         parts = question.split("vs")
         phone1_name = parts[0].strip()
@@ -62,7 +59,7 @@ def ask(question: str):
             "phone2": data2 or {"model": "Not Found"}
         }
 
-    # Single Mode (সাধারণ সার্চ)
+    # Single Mode
     else:
         data = get_phone_data(question)
         if data:
@@ -70,7 +67,6 @@ def ask(question: str):
         else:
             return {"mode": "not_found"}
 
-# Root Endpoint (এখানে HTML ফাইল সার্ভ করা হচ্ছে)
 @app.get("/")
 def home():
-    return FileResponse("index.html")
+    return {"message": "Smart Phone Advisor Running!"}
