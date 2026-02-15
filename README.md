@@ -33,13 +33,14 @@ The system follows a "Cache-First" logic to optimize performance:
 
 ### Output Preview
 
-**Comparison Result**
-![Comparison Result](![photo_2026-02-05 02 24 33](https://github.com/user-attachments/assets/bf5e9849-0648-4d30-98ca-38f20a7bb906)
-)
+**Comparison Result :**
 
-**Single Result**
-(![photo_2026-02-05 02 24 58](https://github.com/user-attachments/assets/8a9f71ff-bd50-4fe0-807b-cd423b1f29fb)
-)
+![photo_2026-02-05 02 24 33](https://github.com/user-attachments/assets/bf5e9849-0648-4d30-98ca-38f20a7bb906)
+
+
+**Single Result :**
+
+![photo_2026-02-05 02 24 58](https://github.com/user-attachments/assets/8a9f71ff-bd50-4fe0-807b-cd423b1f29fb)
 
 ---
 
